@@ -1,0 +1,26 @@
+name: Deploy Check
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  deploy-check:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: false
+      - name: Run checks
+        run: |
+          bundle exec rake validate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
